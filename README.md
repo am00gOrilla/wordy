@@ -76,25 +76,6 @@ uv run python main.py
 - **🕐 History** - View and re-search past queries
 - **⭐ Favorites** - Access bookmarked words
 
-## 🔧 Building
-
-Generate standalone executables for distribution:
-
-```bash
-# Install build dependencies
-pip install pyinstaller pillow
-
-# Build for current platform
-python build.py
-
-# Create installer scripts (Windows/Linux)
-python build.py --scripts
-```
-
-### Output Locations
-- **Windows**: `dist/Wordy.exe`
-- **macOS**: `dist/Wordy.app`
-- **Linux**: `dist/Wordy`
 
 ## 📁 Project Structure
 
