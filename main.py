@@ -29,6 +29,7 @@ from dictionary_manager import DictionaryManager
 
 class ImportWorker(QThread):
     """Background worker to import a single BGL file."""
+
     finished = pyqtSignal(bool, str)
 
     def __init__(self, manager: DictionaryManager, bgl_path: str):
@@ -43,6 +44,7 @@ class ImportWorker(QThread):
 
 class ScanWorker(QThread):
     """Background worker to scan and import dictionaries."""
+
     progress = pyqtSignal(str)
     finished = pyqtSignal(list)
 
@@ -59,6 +61,7 @@ class ScanWorker(QThread):
 
 class SearchWorker(QThread):
     """Background worker for searching (keeps UI responsive)."""
+
     results_ready = pyqtSignal(list)
 
     def __init__(self, manager: DictionaryManager, query: str):
@@ -76,18 +79,18 @@ class ModernDictApp(QMainWindow):
         super().__init__()
         self.manager = DictionaryManager()
         self.current_results = []  # Store current results for favorites
-        
+
         self.setWindowTitle("Wordy - Modern Dictionary")
         self.resize(1200, 800)
-        
+
         # Set App Icon
         icon_path = Path(__file__).parent / "icon.png"
         if icon_path.exists():
             self.setWindowIcon(QIcon(str(icon_path)))
-        
+
         # Load Stylesheet
         self._load_stylesheet()
-        
+
         self._init_ui()
         self._setup_shortcuts()
         self._start_auto_scan()
@@ -111,8 +114,10 @@ class ModernDictApp(QMainWindow):
         sidebar_frame = QFrame()
         sidebar_frame.setFixedWidth(300)
         sidebar_frame.setObjectName("Sidebar")
-        sidebar_frame.setStyleSheet("background-color: #252526; border-right: 1px solid #333;")
-        
+        sidebar_frame.setStyleSheet(
+            "background-color: #252526; border-right: 1px solid #333;"
+        )
+
         sidebar_layout = QVBoxLayout(sidebar_frame)
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(0)
@@ -121,7 +126,9 @@ class ModernDictApp(QMainWindow):
         title_label = QLabel("  📖 WORDY")
         title_label.setObjectName("HeaderTitle")
         title_label.setFixedHeight(50)
-        title_label.setStyleSheet("padding-left: 10px; font-weight: bold; font-size: 18px; color: #4ec9b0;")
+        title_label.setStyleSheet(
+            "padding-left: 10px; font-weight: bold; font-size: 18px; color: #4ec9b0;"
+        )
         sidebar_layout.addWidget(title_label)
 
         # Sidebar Tabs
@@ -136,11 +143,11 @@ class ModernDictApp(QMainWindow):
         dict_widget = QWidget()
         dict_layout = QVBoxLayout(dict_widget)
         dict_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         self.dict_list = QListWidget()
         self.dict_list.currentItemChanged.connect(self._on_dict_selected)
         dict_layout.addWidget(self.dict_list)
-        
+
         # Import Button
         self.import_btn = QPushButton("📥 Import BGL File...")
         self.import_btn.clicked.connect(self._import_bgl)
@@ -150,34 +157,36 @@ class ModernDictApp(QMainWindow):
             QPushButton:disabled { background: #3e3e42; color: #666; }
         """)
         dict_layout.addWidget(self.import_btn)
-        
+
         self.sidebar_tabs.addTab(dict_widget, "📚 Libraries")
 
         # History Tab
         history_widget = QWidget()
         history_layout = QVBoxLayout(history_widget)
         history_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         self.history_list = QListWidget()
         self.history_list.itemDoubleClicked.connect(self._on_history_item_clicked)
         history_layout.addWidget(self.history_list)
-        
+
         btn_clear_history = QPushButton("🗑️ Clear History")
         btn_clear_history.clicked.connect(self._clear_history)
-        btn_clear_history.setStyleSheet("QPushButton { background: #333; color: #888; border: none; padding: 8px; margin: 8px; border-radius: 4px; } QPushButton:hover { background: #444; color: #fff; }")
+        btn_clear_history.setStyleSheet(
+            "QPushButton { background: #333; color: #888; border: none; padding: 8px; margin: 8px; border-radius: 4px; } QPushButton:hover { background: #444; color: #fff; }"
+        )
         history_layout.addWidget(btn_clear_history)
-        
+
         self.sidebar_tabs.addTab(history_widget, "🕐 History")
 
         # Favorites Tab
         favorites_widget = QWidget()
         favorites_layout = QVBoxLayout(favorites_widget)
         favorites_layout.setContentsMargins(0, 0, 0, 0)
-        
+
         self.favorites_list = QListWidget()
         self.favorites_list.itemDoubleClicked.connect(self._on_favorite_item_clicked)
         favorites_layout.addWidget(self.favorites_list)
-        
+
         self.sidebar_tabs.addTab(favorites_widget, "⭐ Favorites")
 
         sidebar_layout.addWidget(self.sidebar_tabs)
@@ -186,12 +195,16 @@ class ModernDictApp(QMainWindow):
         self.scan_progress = QProgressBar()
         self.scan_progress.setFixedHeight(4)
         self.scan_progress.setTextVisible(False)
-        self.scan_progress.setStyleSheet("QProgressBar { border: 0px; background: #2d2d2d; } QProgressBar::chunk { background: #0e639c; }")
+        self.scan_progress.setStyleSheet(
+            "QProgressBar { border: 0px; background: #2d2d2d; } QProgressBar::chunk { background: #0e639c; }"
+        )
         self.scan_progress.hide()
         sidebar_layout.addWidget(self.scan_progress)
 
         self.status_label = QLabel("Ready")
-        self.status_label.setStyleSheet("padding: 8px; color: #888; font-size: 12px; background: #252526;")
+        self.status_label.setStyleSheet(
+            "padding: 8px; color: #888; font-size: 12px; background: #252526;"
+        )
         sidebar_layout.addWidget(self.status_label)
 
         main_layout.addWidget(sidebar_frame)
@@ -210,14 +223,14 @@ class ModernDictApp(QMainWindow):
         self.search_input.setStyleSheet("font-size: 18px;")
         self.search_input.returnPressed.connect(self._perform_search)
         search_layout.addWidget(self.search_input)
-        
+
         btn_search = QPushButton("🔍 Search")
         btn_search.setMinimumHeight(50)
         btn_search.setMinimumWidth(100)
         btn_search.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_search.clicked.connect(self._perform_search)
         search_layout.addWidget(btn_search)
-        
+
         content_layout.addLayout(search_layout)
 
         # Web View for Results
@@ -232,11 +245,11 @@ class ModernDictApp(QMainWindow):
         # Ctrl+F to focus search
         shortcut_search = QShortcut(QKeySequence("Ctrl+F"), self)
         shortcut_search.activated.connect(lambda: self.search_input.setFocus())
-        
+
         # Ctrl+O to import file
         shortcut_import = QShortcut(QKeySequence("Ctrl+O"), self)
         shortcut_import.activated.connect(self._import_bgl)
-        
+
         # Escape to clear search
         shortcut_escape = QShortcut(QKeySequence("Escape"), self)
         shortcut_escape.activated.connect(self.search_input.clear)
@@ -263,7 +276,9 @@ class ModernDictApp(QMainWindow):
             self._load_dictionaries()
         else:
             QMessageBox.critical(self, "❌ Import Failed", message)
-        self.status_label.setText(message[:80] + "..." if len(message) > 80 else message)
+        self.status_label.setText(
+            message[:80] + "..." if len(message) > 80 else message
+        )
 
     def _start_auto_scan(self):
         self.scan_progress.show()
@@ -275,21 +290,23 @@ class ModernDictApp(QMainWindow):
 
     def _on_scan_finished(self, results):
         self.scan_progress.hide()
-        import_count = sum(1 for r in results if r['status'] == 'success')
+        import_count = sum(1 for r in results if r["status"] == "success")
         self.status_label.setText(f"Scan complete. {import_count} imported.")
         self._load_dictionaries()
         self._load_history()
         self._load_favorites()
-        
-        errors = [r for r in results if r['status'] == 'error']
+
+        errors = [r for r in results if r["status"] == "error"]
         if errors:
             msg = "\n".join([f"• {e['file']}: {e['message'][:50]}..." for e in errors])
-            QMessageBox.warning(self, "Import Issues", f"Some files could not be imported:\n\n{msg}")
+            QMessageBox.warning(
+                self, "Import Issues", f"Some files could not be imported:\n\n{msg}"
+            )
 
     def _load_dictionaries(self):
         self.dict_list.clear()
         dicts = self.manager.get_dictionaries()
-        
+
         if not dicts:
             item = QListWidgetItem("No dictionaries found")
             item.setFlags(Qt.ItemFlag.NoItemFlags)
@@ -301,7 +318,7 @@ class ModernDictApp(QMainWindow):
             item = QListWidgetItem(f"📕 {display_name} ({count:,})")
             item.setData(Qt.ItemDataRole.UserRole, dict_id)
             self.dict_list.addItem(item)
-        
+
         if self.dict_list.count() > 0:
             self.dict_list.setCurrentRow(0)
 
@@ -354,13 +371,13 @@ class ModernDictApp(QMainWindow):
         query = self.search_input.text().strip()
         if not query:
             return
-        
+
         # Add to history
         self.manager.add_to_history(query)
         self._load_history()
-        
+
         self.status_label.setText(f"Searching for '{query}'...")
-        
+
         self.search_worker = SearchWorker(self.manager, query)
         self.search_worker.results_ready.connect(self._display_results)
         self.search_worker.start()
@@ -369,29 +386,29 @@ class ModernDictApp(QMainWindow):
         self.status_label.setText("Ready")
         query = self.search_input.text().strip()
         self.current_results = results
-        
+
         if not results:
             self.web_view.setHtml(self._get_no_results_html(query))
             return
 
         html_content = self._get_base_html()
         html_content += '<div class="results-container">'
-        
+
         for word, definition in results:
             is_fav = self.manager.is_favorite(word)
             fav_icon = "★" if is_fav else "☆"
             formatted_def = definition.replace("\n", "<br>")
-            
+
             html_content += f"""
             <div class="card">
                 <div class="word-header">
                     <span>{html.escape(word)}</span>
-                    <span class="fav-icon" title="{'Remove from favorites' if is_fav else 'Add to favorites'}">{fav_icon}</span>
+                    <span class="fav-icon" title="{"Remove from favorites" if is_fav else "Add to favorites"}">{fav_icon}</span>
                 </div>
                 <div class="definition">{formatted_def}</div>
             </div>
             """
-        
+
         html_content += "</div></body></html>"
         self.web_view.setHtml(html_content)
 
@@ -468,7 +485,9 @@ class ModernDictApp(QMainWindow):
 
     def _get_welcome_html(self):
         base = self._get_base_html()
-        return base + """
+        return (
+            base
+            + """
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; color: #777;">
                 <h1 style="font-size: 56px; margin-bottom: 10px; color: #4ec9b0;">📖 WORDY</h1>
                 <p style="font-size: 20px; color: #888;">Type a word above to start searching</p>
@@ -484,10 +503,13 @@ class ModernDictApp(QMainWindow):
             </div>
         </body></html>
         """
+        )
 
     def _get_no_results_html(self, query):
         base = self._get_base_html()
-        return base + f"""
+        return (
+            base
+            + f"""
             <div style="text-align: center; padding-top: 60px;">
                 <h2 style="color: #f44747; font-size: 28px;">No results found</h2>
                 <p style="font-size: 18px;">We couldn't find any matches for "<strong>{html.escape(query)}</strong>"</p>
@@ -495,16 +517,17 @@ class ModernDictApp(QMainWindow):
             </div>
         </body></html>
         """
+        )
 
 
 def main():
     app = QApplication(sys.argv)
-    
+
     # Set app icon globally
     icon_path = Path(__file__).parent / "icon.png"
     if icon_path.exists():
         app.setWindowIcon(QIcon(str(icon_path)))
-    
+
     window = ModernDictApp()
     window.show()
     sys.exit(app.exec())

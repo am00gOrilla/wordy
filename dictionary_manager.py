@@ -314,14 +314,14 @@ class DictionaryManager:
         """
         results = []
         directory_path = Path(directory)
-        
+
         if not directory_path.exists():
             return [{"status": "error", "message": f"Directory not found: {directory}"}]
 
         # Find all BGL files (case-insensitive)
         files = []
         for f in directory_path.iterdir():
-            if f.is_file() and f.suffix.lower() == '.bgl':
+            if f.is_file() and f.suffix.lower() == ".bgl":
                 files.append(f)
 
         if not files:
@@ -330,30 +330,32 @@ class DictionaryManager:
         # Get existing dictionary paths to avoid re-importing
         with sqlite3.connect(self.db_path) as conn:
             existing_paths = {
-                row[0] for row in 
-                conn.execute("SELECT source_path FROM dictionaries").fetchall()
+                row[0]
+                for row in conn.execute(
+                    "SELECT source_path FROM dictionaries"
+                ).fetchall()
             }
 
         for file_path in files:
             abs_path = str(file_path.absolute())
             file_name = file_path.name
-            
+
             # Skip if already imported
             if abs_path in existing_paths:
-                results.append({
-                    "file": file_name,
-                    "status": "skip",
-                    "message": "Already imported"
-                })
+                results.append(
+                    {"file": file_name, "status": "skip", "message": "Already imported"}
+                )
                 continue
-                
+
             # Attempt import
             success, msg = self.import_bgl(str(file_path))
-            results.append({
-                "file": file_name,
-                "status": "success" if success else "error",
-                "message": msg
-            })
+            results.append(
+                {
+                    "file": file_name,
+                    "status": "success" if success else "error",
+                    "message": msg,
+                }
+            )
 
         return results
 
@@ -366,7 +368,7 @@ class DictionaryManager:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 "INSERT INTO search_history (query, dictionary_id) VALUES (?, ?)",
-                (query.strip(), self.current_dict_id)
+                (query.strip(), self.current_dict_id),
             )
             # Keep only last 100 entries
             conn.execute("""
@@ -382,7 +384,7 @@ class DictionaryManager:
             rows = conn.execute(
                 """SELECT query, searched_at FROM search_history 
                    ORDER BY searched_at DESC LIMIT ?""",
-                (limit,)
+                (limit,),
             ).fetchall()
             return rows
 
@@ -400,13 +402,13 @@ class DictionaryManager:
             # Check if already favorited
             exists = conn.execute(
                 "SELECT 1 FROM favorites WHERE word = ? AND dictionary_id = ?",
-                (word, self.current_dict_id)
+                (word, self.current_dict_id),
             ).fetchone()
             if exists:
                 return False
             conn.execute(
                 "INSERT INTO favorites (word, definition, dictionary_id) VALUES (?, ?, ?)",
-                (word, definition, self.current_dict_id)
+                (word, definition, self.current_dict_id),
             )
             conn.commit()
             return True
@@ -416,7 +418,7 @@ class DictionaryManager:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 "DELETE FROM favorites WHERE word = ? AND dictionary_id = ?",
-                (word, self.current_dict_id)
+                (word, self.current_dict_id),
             )
             conn.commit()
             return cursor.rowcount > 0
@@ -427,7 +429,7 @@ class DictionaryManager:
             rows = conn.execute(
                 """SELECT word, definition, added_at FROM favorites 
                    ORDER BY added_at DESC LIMIT ?""",
-                (limit,)
+                (limit,),
             ).fetchall()
             return rows
 
@@ -436,6 +438,6 @@ class DictionaryManager:
         with sqlite3.connect(self.db_path) as conn:
             exists = conn.execute(
                 "SELECT 1 FROM favorites WHERE word = ? AND dictionary_id = ?",
-                (word, self.current_dict_id)
+                (word, self.current_dict_id),
             ).fetchone()
             return exists is not None
