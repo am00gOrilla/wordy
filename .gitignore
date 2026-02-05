@@ -1,0 +1,18 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+*.db
+*.sqlite
+.DS_Store
+uv.lock
+.python-version
+build.py
+sources/
+Wordy.spec
